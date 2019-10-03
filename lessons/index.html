@@ -43,10 +43,25 @@
                         <p class="price">
                             {{product.price | formatPrice}}
                         </p>
-                        <button v-on:click="addToCart" class="default" v-if="canAddToCart">
+                        <button v-on:click="addToCart" class="btn btn-primary btn-lg"
+                         v-if="canAddToCart">
                         Добавить в корзину
                     </button>
-                        <button class="disabled" v-else>Товар закончился</button>
+                        <span v-if="product.availableInventory - cartItemCount === 0" class="inventory-message">
+                    Все продано!        
+                        </span>
+                        <span class="inventory-message"
+                        v-else-if="product.availableInventory - cartItemCount < 5">
+                        Осталось {{product.availableInventory - cartItemCount}} товара!
+                    </span>
+                    <span v-else class="inventory-message">
+                     Покупай сейчас!
+                    </span>
+                    <div class="rating">
+                        <span
+                        v-bind:class="{'rating-active': checkRating(n)}"
+                        v-for="n in 5">☆</span>
+                    </div>
                     </div>
                 </div>
             <div v-else>
@@ -63,7 +78,7 @@
         <strong>Адрес:</strong>
     </div>
     <div class="col-md-12">
-        <input class="form-control" v-model = "order.Addres">
+        <input class="form-control" v-model = "order.addres">
     </div>
 </div>
 <div class="form-group">
@@ -79,31 +94,61 @@
         <strong>Регион:</strong>
         <select v-model="order.state" class="form-control">
             <option disabled value="">Регион</option>
-            <option>Москва</option>
-            <option>Поволжье</option>
-            <option>Урал</option>
-            <option>Сибирь</option>
+            <option v-for="(state, Key) in states"
+            v-bind:value='state'>{{key}}</option>
         </select>
     </div>
 </div>
 <div class="form-group">
     <div class="col-md-6 col-md-offset-4">
-<strong> Zip/ Postal Code:</strong>
-<input class = "form-control" v-model = "order-zip">
+<strong> Postal Code:</strong>
+<input class = "form-control" v-model.number = "order.zip" type="number">
     </div>
 </div>
+ 
+    <div class="form-group">
+        <div class="col-md-6 boxes">
+            <input type="checkbox" id="gift"
+             value="true" 
+             v-model="order.gift"
+             v-bind:true-value="order.sendGift"
+             v-bind:false-value="order.dontSendGift">
+            <label for="gift"> Доставить в подарочной упаковки</label>
+        </div>
+    </div>
+    <div class="form-group">
+        <div class="col-md-6 boxes">
+            <input type="radio" id="home" 
+            value="Home" 
+            v-bind:value="order.home"
+            v-model="order.method">
+            <label for="home">Домой</label>
+            <input type="radio" id="business" value="Business" 
+            v-bind:value ="order.business"
+            v-model="order.method">
+            <label for="business">На работу</label>
+
+        </div>
+    </div>
     <div class="col-md-12 verify">
-        <pre>
-            Имя: {{order.firstName}};
-            Фамилия: {{order.lastName}};
-            Адрес: {{order.addres}};
-            Город: {{order.city}};
-            Zip:{{order.zip}};
-            Регион: {{order.state}};
-        </pre>
-    </div>
-</div>
+            <pre>
+                Имя: {{order.firstName}};
+                Фамилия: {{order.lastName}};
+                Адрес: {{order.addres}};
+                Город: {{order.city}};
+                Zip:{{order.zip}};
+                Регион: {{order.state}};
+                Домашний/Рабочий: {{order.method}}
+                В подарок: {{order.gift}}
+            </pre>            
+        </div>
+        <div class="form-group">
+            <div class="col-md-6">
+                <button type="submit" class="btn btn-primary submit" v-on:click="submitForm">Сделать заказ</button>
             </div>
+        </div>
+            </div>
+            
         
         </main>
 
@@ -122,6 +167,18 @@
                  city: '',
                  zip: '',
                  state: '',
+                 method: '',
+                 gift: '',
+                 sendGift: 'Подарочная упаковка;',
+                 dontSendGift: 'Без подарочной упаковки;',
+                 business: 'Рабочий адрес;',
+                 home: 'Домашний адрес;',
+             },
+            states:{
+                Moscow:'Москва',
+                Ural:'Урал',
+                Siberian:'Сибирь',
+    
              },
             sitename: "Vue.js Pet Depot",
             product: {
@@ -130,7 +187,8 @@
                 description: "A 25 pound bag of <em>irresistible</em>," + " organic goodness for your cat.",
                 price: 2000,
                 image: "accest/images/product-fullsize.png",
-                availableInventory: 5,
+                availableInventory: 10,
+                rating: 3,
             },
             showProduct: true,
             cart: []
@@ -157,6 +215,13 @@
             },
         },
         methods: {
+            checkRating(n){
+                return this.product.rating - n>=0;s
+
+            },
+            submitForm(){
+                alert('Заказ сделан')
+            },
             showCheckout() {
                 this.showProduct = this.showProduct ? false : true;
             },
